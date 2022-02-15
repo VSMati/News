@@ -10,8 +10,11 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.example.news.databinding.ActivityWebNewsBinding;
 /**Show the webpage of news' source*/
@@ -37,7 +40,7 @@ public class WebActivity extends AppCompatActivity {
 
         mWebView.loadUrl(url);
         binding.progressBar.setMax(100); binding.progressBar.setProgress(1);
-        /**Set bar's progress according to url load**/
+        /*Set bar's progress according to url load*/
         mWebView.setWebChromeClient(new WebChromeClient(){
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -55,6 +58,14 @@ public class WebActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 binding.progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(getApplicationContext(), R.string.error_web, Toast.LENGTH_SHORT).show();
+                onBackPressed();
             }
         });
     }

@@ -6,4 +6,5 @@
     <string name="error">Data loading error</string>
     <string name="share_news">Share news</string>
     <string name="this_news_picture">This news\' picture</string>
+    <string name="error_web">Couldn\'t load this site</string>
 </resources>

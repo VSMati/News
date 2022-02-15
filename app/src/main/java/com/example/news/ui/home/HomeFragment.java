@@ -2,31 +2,23 @@ package com.example.news.ui.home;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.os.ConfigurationCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.news.App;
 import com.example.news.R;
 import com.example.news.WebActivity;
 import com.example.news.api.models.NewsDTO;
-import com.example.news.api.models.Wrapper;
 import com.example.news.databinding.FragmentHomeBinding;
 import com.example.news.databinding.ItemNewsBinding;
 import com.squareup.picasso.Picasso;
@@ -36,50 +28,45 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.chrisbanes.insetter.Insetter;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
-
 public class HomeFragment extends Fragment {
-    private HomeViewModel homeViewModel;
-    private FragmentHomeBinding binding;
-    private final CompositeDisposable mDisposable = new CompositeDisposable();
+    private HomeViewModel mViewModel;
+    private FragmentHomeBinding mBinding;
+    private SwipeRefreshLayout mSwipe;
 
     RecyclerView mRecyclerView;
     Adapter mAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel =
+        mViewModel =
                 new ViewModelProvider(this).get(HomeViewModel.class);
 
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        mBinding = FragmentHomeBinding.inflate(inflater, container, false);
+        mSwipe = mBinding.swipeContainer;
 
-        return binding.getRoot();
+        return mBinding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = binding.homeList;
+        mRecyclerView = mBinding.homeList;
 
-        homeViewModel.getList().observe(this, new Observer<Wrapper<List<NewsDTO>>>() {
-            @Override
-            public void onChanged(Wrapper<List<NewsDTO>> listWrapper) {
-                if (listWrapper.getError() != null) {
-                    Toast.makeText(getContext(), R.string.error,Toast.LENGTH_SHORT).show();
-                }else {
-                    mAdapter.setList(listWrapper.getData());
-                    mAdapter.notifyDataSetChanged();
-                }
-            }
-        });
+        mSwipe.setOnRefreshListener(this::refresh);
+        mSwipe.setColorSchemeColors(mBinding.getRoot().getResources().getColor(R.color.purple_700),
+                mBinding.getRoot().getResources().getColor(R.color.purple_200));
+
         setRecyclerView();
+        refresh();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        mRecyclerView.setAdapter(null);
+        mAdapter = null;
+        mRecyclerView = null;
+        mBinding = null;
     }
 
     private void setRecyclerView() {
@@ -88,6 +75,17 @@ public class HomeFragment extends Fragment {
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         } else mAdapter.notifyDataSetChanged();
+    }
+
+    private void refresh() {
+        mViewModel.getList().observe(this, listWrapper -> {
+            if (listWrapper.getError() != null) {
+                Toast.makeText(getContext(), R.string.error,Toast.LENGTH_SHORT).show();
+            }else {
+                mAdapter.setList(listWrapper.getData());
+            }
+            mSwipe.setRefreshing(false);
+        });
     }
 
     public static class Adapter extends RecyclerView.Adapter<NewsHolder> {
@@ -101,6 +99,7 @@ public class HomeFragment extends Fragment {
         public void setList(List<NewsDTO> list) {
             mList.clear();
             mList.addAll(list);
+            notifyDataSetChanged();
         }
 
         @NonNull
