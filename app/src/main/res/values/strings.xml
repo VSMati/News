@@ -3,4 +3,7 @@
     <string name="title_home">Home</string>
     <string name="title_trending">Trends</string>
     <string name="title_search">Search</string>
+    <string name="error">Data loading error</string>
+    <string name="share_news">Share news</string>
+    <string name="this_news_picture">This news\' picture</string>
 </resources>

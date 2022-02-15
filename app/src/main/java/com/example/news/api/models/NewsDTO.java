@@ -3,11 +3,13 @@ package com.example.news.api.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class NewsDTO {
 
     @SerializedName("source")
     @Expose
-    private SourceDTO source;
+    private SourceList source;
     @SerializedName("author")
     @Expose
     private String author;
@@ -30,11 +32,11 @@ public class NewsDTO {
     @Expose
     private String content;
 
-    public SourceDTO getSource() {
+    public SourceList getSource() {
         return source;
     }
 
-    public void setSource(SourceDTO source) {
+    public void setSource(SourceList source) {
         this.source = source;
     }
 
