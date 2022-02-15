@@ -29,6 +29,7 @@ import com.example.news.api.models.NewsDTO;
 import com.example.news.api.models.Wrapper;
 import com.example.news.databinding.FragmentHomeBinding;
 import com.example.news.databinding.ItemNewsBinding;
+import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +42,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 public class HomeFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private FragmentHomeBinding binding;
-    private CompositeDisposable mDisposable = new CompositeDisposable();
+    private final CompositeDisposable mDisposable = new CompositeDisposable();
 
     RecyclerView mRecyclerView;
     Adapter mAdapter;
@@ -65,7 +66,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onChanged(Wrapper<List<NewsDTO>> listWrapper) {
                 if (listWrapper.getError() != null) {
-                    Log.e(getTag(), "onChanged: error", listWrapper.getError());
                     Toast.makeText(getContext(), R.string.error,Toast.LENGTH_SHORT).show();
                 }else {
                     mAdapter.setList(listWrapper.getData());
@@ -91,8 +91,8 @@ public class HomeFragment extends Fragment {
     }
 
     public static class Adapter extends RecyclerView.Adapter<NewsHolder> {
-        private List<NewsDTO> mList = new ArrayList<>();
-        private Context mContext;
+        private final List<NewsDTO> mList = new ArrayList<>();
+        private final Context mContext;
 
         public Adapter(Context context) {
             mContext = context;
@@ -163,6 +163,9 @@ public class HomeFragment extends Fragment {
             binding.heading.setText(news.getTitle());
             binding.text.setText(news.getContent());
             binding.publisher.setText(news.getAuthor());
+            Picasso.get().load(news.getUrlToImage()).fit().centerCrop()
+                    .placeholder(R.drawable.news_placeholder)
+                    .into(binding.image);
             binding.executePendingBindings();
         }
 
