@@ -1,4 +1,4 @@
-package com.example.news;
+package com.example.news.config;
 
 import android.content.res.Resources;
 
@@ -13,6 +13,9 @@ public class ConfigurationUtil {
             ,"cn","co","cu","cz","de","eg","fr","gb","gr","hk","hu","id","ie","il","in","it","jp"
             ,"kr","lt","lv","ma","mx","my","ng","nl","no","nz","ph","pl","pt","ro","rs","ru",
             "sa","se","sg","si","sk","th","tr","tw","ua","us","ve","za"};
+
+
+
     private static Locale mLocale;
     private static String lang;
     private static String country;
@@ -34,5 +37,9 @@ public class ConfigurationUtil {
         }
         country = mLocale.getCountry().toLowerCase();
         return country;
+    }
+
+    public static String getSort(Sort type) {
+        return type.toString();
     }
 }

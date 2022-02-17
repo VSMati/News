@@ -1,7 +1,5 @@
 package com.example.news.ui.home;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,21 +9,21 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.news.R;
-import com.example.news.WebActivity;
-import com.example.news.api.models.NewsDTO;
 import com.example.news.databinding.FragmentHomeBinding;
-import com.example.news.databinding.ItemNewsBinding;
-import com.squareup.picasso.Picasso;
+import com.example.news.databinding.ItemCategoryBinding;
+import com.example.news.ui.ListNews;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -33,8 +31,13 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding mBinding;
     private SwipeRefreshLayout mSwipe;
 
-    RecyclerView mRecyclerView;
-    Adapter mAdapter;
+    RecyclerView mNewsList;
+    ListNews.Adapter mNewsAdapter;
+
+    RecyclerView mCategoryList;
+    Adapter mCategoryAdapter;
+
+    private String category;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -50,7 +53,21 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = mBinding.homeList;
+        mNewsList = mBinding.homeList;
+        mCategoryList = mBinding.categoryList;
+        mCategoryList.setNestedScrollingEnabled(false);
+
+
+        List<String> categories = Arrays.asList(getResources().getStringArray(R.array.categories));
+        mCategoryAdapter = new Adapter(new DataTransfer() {
+            @Override
+            public void transferData(String data) {
+                category = data;
+                refresh();
+                mNewsAdapter.notifyDataSetChanged();
+            }
+        },categories);
+
 
         mSwipe.setOnRefreshListener(this::refresh);
         mSwipe.setColorSchemeColors(mBinding.getRoot().getResources().getColor(R.color.purple_700),
@@ -63,124 +80,116 @@ public class HomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mRecyclerView.setAdapter(null);
-        mAdapter = null;
-        mRecyclerView = null;
+        mNewsList.setAdapter(null);
+        mNewsAdapter = null;
+        mNewsList = null;
         mBinding = null;
     }
 
     private void setRecyclerView() {
-        if (mAdapter == null) {
-            mAdapter = new Adapter(getContext());
-            mRecyclerView.setAdapter(mAdapter);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        } else mAdapter.notifyDataSetChanged();
+        if (mNewsAdapter == null) {
+            mNewsAdapter = new ListNews.Adapter(getContext());
+            mNewsList.setAdapter(mNewsAdapter);
+            mNewsList.setLayoutManager(new LinearLayoutManager(getContext()));
+        } else mNewsAdapter.notifyDataSetChanged();
+
+        mCategoryList.setAdapter(mCategoryAdapter);
+        mCategoryList.setLayoutManager(new LinearLayoutManager(getContext(),
+                LinearLayoutManager.HORIZONTAL,false));
     }
 
     private void refresh() {
-        mViewModel.getList().observe(this, listWrapper -> {
-            if (listWrapper.getError() != null) {
-                Toast.makeText(getContext(), R.string.error,Toast.LENGTH_SHORT).show();
-            }else {
-                mAdapter.setList(listWrapper.getData());
-            }
-            mSwipe.setRefreshing(false);
-        });
+        if (category == null) {
+            mViewModel.getList().observe(this, listWrapper -> {
+                if (listWrapper.getError() != null) {
+                    Toast.makeText(getContext(), R.string.error,Toast.LENGTH_SHORT).show();
+                }else {
+                    mNewsAdapter.setList(listWrapper.getData());
+                }
+                mSwipe.setRefreshing(false);
+            });
+        } else {
+            mViewModel.getList(category).observe(this, listWrapper -> {
+                if (listWrapper.getError() != null) {
+                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }else {
+                    mNewsAdapter.setList(listWrapper.getData());
+                }
+                mSwipe.setRefreshing(false);
+            });
+        }
     }
 
-    public static class Adapter extends RecyclerView.Adapter<NewsHolder> {
-        private final List<NewsDTO> mList = new ArrayList<>();
-        private final Context mContext;
+    public static class Adapter extends RecyclerView.Adapter<CategoryHolder> {
+        private static final List<String> LIST = (Arrays.asList("business", "entertainment",
+                "general", "health", "science", "sport", "technology"));
+        private List<String> listToShow;
+        private String category;
+        private DataTransfer mDataTransfer;
 
-        public Adapter(Context context) {
-            mContext = context;
-        }
-
-        public void setList(List<NewsDTO> list) {
-            mList.clear();
-            mList.addAll(list);
-            notifyDataSetChanged();
+        public Adapter(DataTransfer dataTransfer, List<String> showVal) {
+            mDataTransfer = dataTransfer;
+            listToShow = showVal;
         }
 
         @NonNull
         @NotNull
         @Override
-        public NewsHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+        public CategoryHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater =
                     LayoutInflater.from(parent.getContext());
-            ItemNewsBinding itemBinding =
-                    ItemNewsBinding.inflate(layoutInflater, parent, false);
-            NewsHolder holder = new NewsHolder(itemBinding, new ClickListener() {
+            ItemCategoryBinding binding =
+                    ItemCategoryBinding.inflate(layoutInflater, parent, false);
+            CategoryHolder holder = new CategoryHolder(binding, new CategoryClick() {
                 @Override
                 public void onClick(int position) {
-                    String url = mList.get(position).getUrl();
-                    Intent intent = WebActivity.getIntent(mContext, url);
-                    mContext.startActivity(intent);
-                }
-
-                @Override
-                public void onShare(int position) {
-                    String url = mList.get(position).getUrl();
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, url);
-                    sendIntent.setType("text/plain");
-                    Intent shareIntent = Intent.createChooser(sendIntent, null);
-                    mContext.startActivity(shareIntent);
+                    category = LIST.get(position);
+                    mDataTransfer.transferData(category);
                 }
             });
-
             return holder;
         }
 
         @Override
-        public void onBindViewHolder(@NonNull @NotNull NewsHolder holder, int position) {
-            holder.bind(mList.get(position));
+        public void onBindViewHolder(@NonNull @NotNull CategoryHolder holder, int position) {
+            holder.bind(listToShow.get(position));
         }
 
         @Override
         public int getItemCount() {
-            return mList.size();
+            return listToShow.size();
         }
+
 
     }
+    public static class CategoryHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        CategoryClick mClick;
+        ItemCategoryBinding mBinding;
 
-    public static class NewsHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private final ItemNewsBinding binding;
-        ClickListener mClickListener;
-
-        public NewsHolder(@NonNull @NotNull ItemNewsBinding binding, ClickListener click) {
+        public CategoryHolder(ItemCategoryBinding binding, CategoryClick click) {
             super(binding.getRoot());
-            this.binding = binding;
-            this.mClickListener = click;
+            mBinding = binding;
+            mClick = click;
 
-            binding.getRoot().setOnClickListener(this);
-            binding.share.setOnClickListener(this);
+            mBinding.getRoot().setOnClickListener(this);
         }
 
-        public void bind(NewsDTO news) {
-            binding.heading.setText(news.getTitle());
-            binding.text.setText(news.getContent());
-            binding.publisher.setText(news.getAuthor());
-            Picasso.get().load(news.getUrlToImage()).fit().centerCrop()
-                    .placeholder(R.drawable.news_placeholder)
-                    .into(binding.image);
-            binding.executePendingBindings();
+        public void bind(String category) {
+            mBinding.setCategory(category);
+            mBinding.executePendingBindings();
         }
 
         @Override
         public void onClick(View v) {
-            if (v.getId() == binding.getRoot().getId()) {
-                mClickListener.onClick(this.getLayoutPosition());
-            }
-            if (v.getId() == binding.share.getId()) {
-                mClickListener.onShare(this.getLayoutPosition());
-            }
+            mClick.onClick(this.getLayoutPosition());
         }
     }
 
-    public interface ClickListener {
+    public interface CategoryClick {
         void onClick(int position);
-        void onShare(int position);
+    }
+
+    public interface DataTransfer {
+        void transferData(String data);
     }
 }

@@ -18,7 +18,10 @@ public class NewsRepository {
     private static NewsRepository sNewsRepository;
     private static NewsService sNewsService;
     private static NewsApi sNewsApi;
+
     private final MutableLiveData<Wrapper<List<NewsDTO>>> mHomeList = new MutableLiveData<>();
+    private final MutableLiveData<Wrapper<List<NewsDTO>>> mTrendList = new MutableLiveData<>();
+    private final MutableLiveData<Wrapper<List<NewsDTO>>> mSearchList = new MutableLiveData<>();
 
     public static NewsRepository getInstance() {
         if (sNewsRepository == null) sNewsRepository = new NewsRepository();
@@ -36,7 +39,9 @@ public class NewsRepository {
             @Override
             public void onResponse(@NotNull Call<NewsList> call, @NotNull Response<NewsList> response) {
                 Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
-                wrapper.setData(response.body().getNewsDTOList());
+                if (response.body() != null) {
+                    wrapper.setData(response.body().getNewsDTOList());
+                }
                 mHomeList.setValue(wrapper);
             }
 
@@ -48,5 +53,67 @@ public class NewsRepository {
             }
         });
         return mHomeList;
+    }
+
+    public MutableLiveData<Wrapper<List<NewsDTO>>> getListBasedOnCategory(String lang, String con, String cat) {
+        Call<NewsList> listOfNews = sNewsApi.getBasedOnCategory(lang,con,cat,sNewsService.KEY);
+        listOfNews.enqueue(new Callback<NewsList>() {
+            @Override
+            public void onResponse(@NotNull Call<NewsList> call, @NotNull Response<NewsList> response) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                if (response.body() != null) {
+                    wrapper.setData(response.body().getNewsDTOList());
+                }
+                mHomeList.setValue(wrapper);
+            }
+
+            @Override
+            public void onFailure(Call<NewsList> call, Throwable t) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                wrapper.setError(t);
+                mHomeList.postValue(wrapper);
+            }
+        });
+        return mHomeList;
+    }
+
+    public MutableLiveData<Wrapper<List<NewsDTO>>> getListBasedOnCountry(String con, String sort) {
+        Call<NewsList> listOfNews = sNewsApi.getTrendingArticles(con, sort, sNewsService.KEY);
+        listOfNews.enqueue(new Callback<NewsList>() {
+            @Override
+            public void onResponse(Call<NewsList> call, Response<NewsList> response) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                wrapper.setData(response.body().getNewsDTOList());
+                mTrendList.setValue(wrapper);
+            }
+
+            @Override
+            public void onFailure(Call<NewsList> call, Throwable t) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                wrapper.setError(t);
+                mTrendList.postValue(wrapper);
+            }
+        });
+        return mTrendList;
+    }
+
+    public MutableLiveData<Wrapper<List<NewsDTO>>> getListBasedOnQuery(String lang, String q) {
+        Call<NewsList> listOfNews = sNewsApi.getBySearch(lang,q,NewsService.KEY);
+        listOfNews.enqueue(new Callback<NewsList>() {
+            @Override
+            public void onResponse(Call<NewsList> call, Response<NewsList> response) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                wrapper.setData(response.body().getNewsDTOList());
+                mSearchList.setValue(wrapper);
+            }
+
+            @Override
+            public void onFailure(Call<NewsList> call, Throwable t) {
+                Wrapper<List<NewsDTO>> wrapper = new Wrapper<>();
+                wrapper.setError(t);
+                mSearchList.postValue(wrapper);
+            }
+        });
+        return mSearchList;
     }
 }

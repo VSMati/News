@@ -8,7 +8,6 @@ import java.util.List;
 import io.reactivex.rxjava3.core.Single;
 import retrofit2.Call;
 import retrofit2.http.GET;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface NewsApi {
@@ -17,10 +16,20 @@ public interface NewsApi {
                                       @Query("country") String country,
                                       @Query("apiKey") String key);
 
-    @GET("top-headlines?country={country}")
-    Single<List<NewsDTO>> getTrendingArticles(@Path("country") String country);
+    @GET("top-headlines")
+    Call<NewsList> getBasedOnCategory(@Query("language") String lang,
+                                      @Query("country") String country,
+                                      @Query("category") String category,
+                                      @Query("apiKey") String key);
 
-    @GET("everything?language={lang}&q={search}")
-    Single<List<NewsDTO>> getBySearch(@Path("lang") String language, @Path("search") String search);
+    @GET("top-headlines")
+    Call<NewsList> getTrendingArticles(@Query("country") String country,
+                                       @Query("sortBy") String sort,
+                                       @Query("apiKey") String key);
+
+    @GET("everything")
+    Call<NewsList> getBySearch(@Query("lang") String language,
+                               @Query("q") String search,
+                               @Query("apiKey") String key);
 
 }

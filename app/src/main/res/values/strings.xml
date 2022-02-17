@@ -7,4 +7,15 @@
     <string name="share_news">Share news</string>
     <string name="this_news_picture">This news\' picture</string>
     <string name="error_web">Couldn\'t load this site</string>
+    <string name="search_hint">Search fresh news</string>
+
+    <string-array name="categories">
+        <item>Business</item>
+        <item>Entertainment</item>
+        <item>General</item>
+        <item>Health</item>
+        <item>Science</item>
+        <item>Sports</item>
+        <item>Technology</item>
+    </string-array>
 </resources>
