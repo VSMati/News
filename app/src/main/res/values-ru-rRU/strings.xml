@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Новости</string>
+    <string name="title_home">Главная</string>
+    <string name="title_trending">Тренды</string>
+    <string name="title_search">Поиск</string>
+    <string name="error">Ошибка загрузки данных</string>
+    <string name="share_news">Поделиться</string>
+    <string name="this_news_picture">Фотография новости</string>
+    <string name="error_web">Ошибка загрузки сайта</string>
+    <string name="search_hint">Поиск новостей</string>
+
+    <string-array name="categories">
+        <item>Бизнес</item>
+        <item>Развлечения</item>
+        <item>Общее</item>
+        <item>Здоровье</item>
+        <item>Наука</item>
+        <item>Спорт</item>
+        <item>Технологии</item>
+    </string-array>
+
+</resources>

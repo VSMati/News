@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Новини</string>
+    <string name="title_home">Головна</string>
+    <string name="title_trending">Тренди</string>
+    <string name="title_search">Пошук</string>
+    <string name="error">Проблеми з завантаженням даних</string>
+    <string name="share_news">Поділитися</string>
+    <string name="this_news_picture">Фотографія новини</string>
+    <string name="error_web">Проблеми з завантаженням сайту</string>
+    <string name="search_hint">Пошук новин</string>
+
+    <string-array name="categories">
+        <item>Бізнес</item>
+        <item>Розваги</item>
+        <item>Загальне</item>
+        <item>Здоров\'я</item>
+        <item>Наука</item>
+        <item>Спорт</item>
+        <item>Технології</item>
+    </string-array>
+</resources>
