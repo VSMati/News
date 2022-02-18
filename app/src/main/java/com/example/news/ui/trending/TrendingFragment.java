@@ -9,21 +9,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.news.R;
-import com.example.news.api.models.NewsDTO;
-import com.example.news.api.models.Wrapper;
 import com.example.news.databinding.FragmentTrendingBinding;
 import com.example.news.ui.ListNews;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 
 public class TrendingFragment extends Fragment {
     private TrendingViewModel trendingViewModel;
@@ -58,14 +54,11 @@ public class TrendingFragment extends Fragment {
     }
 
     private void refresh() {
-        trendingViewModel.getList().observe(this, new Observer<Wrapper<List<NewsDTO>>>() {
-            @Override
-            public void onChanged(Wrapper<List<NewsDTO>> listWrapper) {
-                if (listWrapper.getError() != null) {
-                    Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
-                }else {
-                    mAdapter.setList(listWrapper.getData());
-                }
+        trendingViewModel.getList().observe(this, listWrapper -> {
+            if (listWrapper.getError() != null) {
+                Toast.makeText(getContext(), R.string.error, Toast.LENGTH_SHORT).show();
+            }else {
+                mAdapter.setList(listWrapper.getData());
             }
         });
     }

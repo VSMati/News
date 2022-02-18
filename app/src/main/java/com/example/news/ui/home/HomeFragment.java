@@ -9,7 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,7 +21,6 @@ import com.example.news.ui.ListNews;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,13 +57,10 @@ public class HomeFragment extends Fragment {
 
 
         List<String> categories = Arrays.asList(getResources().getStringArray(R.array.categories));
-        mCategoryAdapter = new Adapter(new DataTransfer() {
-            @Override
-            public void transferData(String data) {
-                category = data;
-                refresh();
-                mNewsAdapter.notifyDataSetChanged();
-            }
+        mCategoryAdapter = new Adapter(data -> {
+            category = data;
+            refresh();
+            mNewsAdapter.notifyDataSetChanged();
         },categories);
 
 
@@ -119,13 +114,13 @@ public class HomeFragment extends Fragment {
             });
         }
     }
-
+/**Adapter for list that shows categories*/
     public static class Adapter extends RecyclerView.Adapter<CategoryHolder> {
         private static final List<String> LIST = (Arrays.asList("business", "entertainment",
                 "general", "health", "science", "sport", "technology"));
-        private List<String> listToShow;
+        private final List<String> listToShow;
         private String category;
-        private DataTransfer mDataTransfer;
+        private final DataTransfer mDataTransfer;
 
         public Adapter(DataTransfer dataTransfer, List<String> showVal) {
             mDataTransfer = dataTransfer;
@@ -140,12 +135,9 @@ public class HomeFragment extends Fragment {
                     LayoutInflater.from(parent.getContext());
             ItemCategoryBinding binding =
                     ItemCategoryBinding.inflate(layoutInflater, parent, false);
-            CategoryHolder holder = new CategoryHolder(binding, new CategoryClick() {
-                @Override
-                public void onClick(int position) {
-                    category = LIST.get(position);
-                    mDataTransfer.transferData(category);
-                }
+            CategoryHolder holder = new CategoryHolder(binding, position -> {
+                category = LIST.get(position);
+                mDataTransfer.transferData(category);
             });
             return holder;
         }
@@ -184,11 +176,11 @@ public class HomeFragment extends Fragment {
             mClick.onClick(this.getLayoutPosition());
         }
     }
-
+/**Get chosen category on click*/
     public interface CategoryClick {
         void onClick(int position);
     }
-
+/**Transfer chosen category from Adapter to Fragment*/
     public interface DataTransfer {
         void transferData(String data);
     }

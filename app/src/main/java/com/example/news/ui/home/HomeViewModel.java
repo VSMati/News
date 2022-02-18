@@ -12,8 +12,8 @@ import java.util.List;
 
 public class HomeViewModel extends ViewModel {
     private final NewsRepository mRepository = NewsRepository.getInstance();
-    private String lang;
-    private String country;
+    private final String lang;
+    private final String country;
 
     public HomeViewModel() {
         lang = ConfigurationUtil.getLang();

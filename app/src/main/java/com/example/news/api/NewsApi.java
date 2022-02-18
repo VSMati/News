@@ -1,11 +1,6 @@
 package com.example.news.api;
 
-import com.example.news.api.models.NewsDTO;
 import com.example.news.api.models.NewsList;
-
-import java.util.List;
-
-import io.reactivex.rxjava3.core.Single;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
